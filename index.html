@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for a polished look and smooth transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
+        }
+
+        /* Define color variables for light and dark themes */
+        :root {
+            --bg-color: #f3f4f6; /* gray-100 */
+            --main-text-color: #1f2937; /* gray-800 */
+            --secondary-text-color: #4b5563; /* gray-600 */
+            --calculator-bg: #ffffff;
+            --screen-bg: #f9fafb; /* gray-50 */
+            --input-bg: #f9fafb; /* gray-50 */
+            --btn-default-bg: #f9fafb; /* gray-50 */
+            --btn-default-hover-bg: #f3f4f6; /* gray-100 */
+            --btn-operator-bg: #fef2f2; /* red-50 */
+            --btn-operator-text: #ef4444; /* red-500 */
+            --btn-operator-hover-bg: #fee2e2; /* red-100 */
+            --btn-equal-bg: #ef4444; /* red-500 */
+            --btn-equal-hover-bg: #dc2626; /* red-600 */
+            --history-bg: #ffffff;
+            --history-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --icon-color: #4b5563; /* gray-600 */
+            --mode-btn-bg: transparent;
+            --mode-btn-text: #4b5563; /* gray-600 */
+            --mode-btn-active-bg: #ef4444; /* red-500 */
+            --mode-btn-active-text: #ffffff;
+        }
+
+        html.dark {
+            --bg-color: #111827; /* gray-900 */
+            --main-text-color: #f9fafb; /* gray-50 */
+            --secondary-text-color: #9ca3af; /* gray-400 */
+            --calculator-bg: #1f2937; /* gray-800 */
+            --screen-bg: #111827; /* gray-900 */
+            --input-bg: #374151; /* gray-700 */
+            --btn-default-bg: #374151; /* gray-700 */
+            --btn-default-hover-bg: #4b5563; /* gray-600 */
+            --btn-operator-bg: #991b1b; /* red-800 */
+            --btn-operator-text: #fecaca; /* red-200 */
+            --btn-operator-hover-bg: #b91c1c; /* red-700 */
+            --btn-equal-bg: #ef4444; /* red-500 */
+            --btn-equal-hover-bg: #f87171; /* red-400 */
+            --history-bg: #1f2937; /* gray-800 */
+            --history-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            --icon-color: #d1d5db; /* gray-300 */
+            --mode-btn-text: #d1d5db; /* gray-300 */
+            --mode-btn-active-bg: #f87171; /* red-400 */
+            --mode-btn-active-text: #111827;
+        }
+
+        /* Apply themed colors using variables */
+        body { background-color: var(--bg-color); color: var(--main-text-color); transition: background-color 0.3s ease, color 0.3s ease; }
+        #calculator-container { background-color: var(--calculator-bg); }
+        #display, .calc-input { background-color: var(--screen-bg); color: var(--main-text-color); }
+        .btn { background-color: var(--btn-default-bg); color: var(--main-text-color); }
+        .btn:hover { background-color: var(--btn-default-hover-bg); }
+        .btn-operator { background-color: var(--btn-operator-bg); color: var(--btn-operator-text); }
+        .btn-operator:hover { background-color: var(--btn-operator-hover-bg); }
+        .btn-equal { background-color: var(--btn-equal-bg); }
+        .btn-equal:hover { background-color: var(--btn-equal-hover-bg); }
+        #history-panel { background-color: var(--history-bg); box-shadow: var(--history-shadow); }
+        .icon { color: var(--icon-color); }
+        .mode-btn { background-color: var(--mode-btn-bg); color: var(--mode-btn-text); }
+        .mode-btn.active { background-color: var(--mode-btn-active-bg); color: var(--mode-btn-active-text); }
+        
+        /* Transitions */
+        #history-panel { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        #history-panel.open { transform: translateX(0); }
+        .calculator-mode {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .calculator-mode.active {
+            display: block;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom scrollbar */
+        #history-list::-webkit-scrollbar { width: 6px; }
+        #history-list::-webkit-scrollbar-track { background: transparent; }
+        #history-list::-webkit-scrollbar-thumb { background-color: #9ca3af; border-radius: 20px; }
+        html.dark #history-list::-webkit-scrollbar-thumb { background-color: #4b5563; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
+        
+        <main id="calculator-container" class="w-full max-w-sm mx-auto rounded-3xl shadow-lg p-6 space-y-4 transition-colors duration-300">
+            <!-- Header -->
+            <header class="flex justify-between items-center">
+                <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-400">
+                    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 icon hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                </button>
+                <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600">Calculator</h1>
+                <button id="history-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-red-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                </button>
+            </header>
+
+            <!-- Mode Selector -->
+            <div class="flex justify-around bg-gray-200 dark:bg-gray-700/50 p-1 rounded-full">
+                <button class="mode-btn w-full text-sm font-semibold p-2 rounded-full transition-colors duration-300" data-mode="standard">Std</button>
+                <button class="mode-btn w-full text-sm font-semibold p-2 rounded-full transition-colors duration-300" data-mode="student">Sci</button>
+                <button class="mode-btn w-full text-sm font-semibold p-2 rounded-full transition-colors duration-300" data-mode="finance">Fin</button>
+                <button class="mode-btn w-full text-sm font-semibold p-2 rounded-full transition-colors duration-300" data-mode="business">Biz</button>
+            </div>
+
+            <!-- Display Screen (Universal for Standard & Student) -->
+            <div id="display-container" class="relative">
+                <input type="text" id="display" class="w-full text-5xl font-bold text-right pr-4 py-4 rounded-xl border-none focus:ring-2 focus:ring-red-400 transition-all duration-300" readonly>
+            </div>
+
+            <!-- ===== CALCULATOR MODES ===== -->
+
+            <!-- Standard Calculator -->
+            <div id="standard-mode" class="calculator-mode">
+                <div class="grid grid-cols-4 gap-4">
+                    <button class="btn btn-operator text-2xl p-4 rounded-2xl" data-value="clear">AC</button>
+                    <button class="btn btn-operator text-1xl p-4 rounded-2xl" data-value="backspace">DEL</button>
+                    <button class="btn btn-operator text-2xl p-4 rounded-2xl" data-value="%">%</button>
+                    <button class="btn btn-operator text-2xl p-4 rounded-2xl" data-value="/">÷</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="7">7</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="8">8</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="9">9</button>
+                    <button class="btn btn-operator text-2xl p-4 rounded-2xl" data-value="*">×</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="4">4</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="5">5</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="6">6</button>
+                    <button class="btn btn-operator text-2xl p-4 rounded-2xl" data-value="-">−</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="1">1</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="2">2</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value="3">3</button>
+                    <button class="btn btn-operator text-2xl p-4 rounded-2xl" data-value="+">+</button>
+                    <button class="btn col-span-2 text-2xl p-4 rounded-2xl" data-value="0">0</button>
+                    <button class="btn text-2xl p-4 rounded-2xl" data-value=".">.</button>
+                    <button class="btn btn-equal text-white text-2xl p-4 rounded-2xl" data-value="=">=</button>
+                </div>
+            </div>
+            
+            <!-- Student (Scientific) Calculator -->
+            <div id="student-mode" class="calculator-mode">
+                 <div class="grid grid-cols-5 gap-3">
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="sin">sin</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="cos">cos</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="tan">tan</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="(">(</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value=")">)</button>
+                    
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="log">log</button>
+                    <button class="btn p-3 rounded-lg" data-value="7">7</button>
+                    <button class="btn p-3 rounded-lg" data-value="8">8</button>
+                    <button class="btn p-3 rounded-lg" data-value="9">9</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="clear">AC</button>
+
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="ln">ln</button>
+                    <button class="btn p-3 rounded-lg" data-value="4">4</button>
+                    <button class="btn p-3 rounded-lg" data-value="5">5</button>
+                    <button class="btn p-3 rounded-lg" data-value="6">6</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="*">×</button>
+
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="sqrt">√</button>
+                    <button class="btn p-3 rounded-lg" data-value="1">1</button>
+                    <button class="btn p-3 rounded-lg" data-value="2">2</button>
+                    <button class="btn p-3 rounded-lg" data-value="3">3</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="-">−</button>
+
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="^">^</button>
+                    <button class="btn p-3 rounded-lg" data-value="0">0</button>
+                    <button class="btn p-3 rounded-lg" data-value=".">.</button>
+                    <button class="btn btn-operator p-3 rounded-lg" data-value="+">+</button>
+                    <button class="btn btn-equal text-white p-3 rounded-lg" data-value="=">=</button>
+                </div>
+            </div>
+
+            <!-- Finance Calculator -->
+            <div id="finance-mode" class="calculator-mode space-y-4">
+                <h3 class="text-center font-bold text-lg">Loan Calculator</h3>
+                <div>
+                    <label class="text-sm font-medium">Loan Amount ($)</label>
+                    <input type="number" id="loan-amount" placeholder="e.g., 10000" class="calc-input w-full p-3 rounded-lg mt-1 border-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <div>
+                    <label class="text-sm font-medium">Annual Interest Rate (%)</label>
+                    <input type="number" id="interest-rate" placeholder="e.g., 5" class="calc-input w-full p-3 rounded-lg mt-1 border-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <div>
+                    <label class="text-sm font-medium">Loan Term (Years)</label>
+                    <input type="number" id="loan-term" placeholder="e.g., 3" class="calc-input w-full p-3 rounded-lg mt-1 border-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <button id="calculate-loan" class="btn btn-equal w-full text-white font-bold p-3 rounded-lg">Calculate Monthly Payment</button>
+                <div id="loan-result" class="text-center pt-2"></div>
+            </div>
+
+            <!-- Business Calculator -->
+            <div id="business-mode" class="calculator-mode space-y-4">
+                <h3 class="text-center font-bold text-lg">Profit Margin</h3>
+                 <div>
+                    <label class="text-sm font-medium">Cost Price</label>
+                    <input type="number" id="cost-price" placeholder="e.g., 75" class="calc-input w-full p-3 rounded-lg mt-1 border-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <div>
+                    <label class="text-sm font-medium">Selling Price</label>
+                    <input type="number" id="sell-price" placeholder="e.g., 100" class="calc-input w-full p-3 rounded-lg mt-1 border-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <button id="calculate-margin" class="btn btn-equal w-full text-white font-bold p-3 rounded-lg">Calculate Margin</button>
+                <div id="margin-result" class="text-center pt-2"></div>
+            </div>
+            
+        </main>
+
+        <!-- History Panel -->
+        <aside id="history-panel" class="fixed top-0 right-0 h-full w-full max-w-sm p-6 flex flex-col z-50 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">History</h2>
+                <button id="close-history" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-red-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="history-list" class="flex-grow overflow-y-auto space-y-4">
+                <!-- History items will be injected here -->
+            </div>
+            <button id="clear-history" class="mt-4 w-full bg-red-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors duration-300">
+                Clear History
+            </button>
+        </aside>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Elements ---
+        const display = document.getElementById('display');
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const historyToggle = document.getElementById('history-toggle');
+        const historyPanel = document.getElementById('history-panel');
+        const closeHistoryBtn = document.getElementById('close-history');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const calculatorModes = document.querySelectorAll('.calculator-mode');
+        const displayContainer = document.getElementById('display-container');
+
+        // --- State ---
+        let currentInput = '';
+        let history = [];
+        let activeMode = 'standard';
+
+        // --- THEME MANAGEMENT ---
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        };
+        const toggleTheme = () => {
+            const newTheme = localStorage.getItem('calculator-theme') === 'light' ? 'dark' : 'light';
+            localStorage.setItem('calculator-theme', newTheme);
+            applyTheme(newTheme);
+        };
+        applyTheme(localStorage.getItem('calculator-theme') || 'light');
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // --- HISTORY MANAGEMENT ---
+        const renderHistory = () => {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyList.innerHTML = `<p class="text-center" style="color: var(--secondary-text-color);">No history yet.</p>`;
+                return;
+            }
+            [...history].reverse().forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'text-right';
+                historyItem.innerHTML = `
+                    <p class="text-sm" style="color: var(--secondary-text-color);">${item.expression}</p>
+                    <p class="text-2xl font-semibold">${item.result}</p>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        };
+        const saveHistory = () => {
+            localStorage.setItem('calculator-history', JSON.stringify(history));
+        };
+        const loadHistory = () => {
+            const savedHistory = localStorage.getItem('calculator-history');
+            if (savedHistory) {
+                history = JSON.parse(savedHistory);
+                renderHistory();
+            }
+        };
+        const clearHistory = () => {
+            history = [];
+            saveHistory();
+            renderHistory();
+        };
+        historyToggle.addEventListener('click', () => historyPanel.classList.add('open'));
+        closeHistoryBtn.addEventListener('click', () => historyPanel.classList.remove('open'));
+        clearHistoryBtn.addEventListener('click', clearHistory);
+        
+        // --- MODE SWITCHING ---
+        const switchMode = (mode) => {
+            activeMode = mode;
+            modeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            calculatorModes.forEach(calc => {
+                calc.classList.toggle('active', calc.id === `${mode}-mode`);
+            });
+            displayContainer.style.display = (mode === 'standard' || mode === 'student') ? 'block' : 'none';
+            currentInput = '';
+            updateDisplay();
+            document.getElementById('loan-result').innerHTML = '';
+            document.getElementById('margin-result').innerHTML = '';
+        };
+
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => switchMode(button.dataset.mode));
+        });
+
+        // --- CALCULATOR LOGIC ---
+        const updateDisplay = () => {
+            display.value = currentInput || '0';
+        };
+
+        const handleCalculation = () => {
+            try {
+                let expression = currentInput
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/−/g, '-')
+                    .replace(/\^/g, '**')
+                    .replace(/√/g, 'Math.sqrt')
+                    .replace(/log/g, 'Math.log10')
+                    .replace(/ln/g, 'Math.log')
+                    .replace(/sin/g, 'Math.sin')
+                    .replace(/cos/g, 'Math.cos')
+                    .replace(/tan/g, 'Math.tan');
+                
+                expression = expression.replace(/(Math.sin|Math.cos|Math.tan)\(([^)]+)\)/g, (match, func, val) => {
+                    return `${func}(${val} * Math.PI / 180)`;
+                });
+                
+                const result = new Function('return ' + expression)();
+                if (isNaN(result) || !isFinite(result)) throw new Error("Invalid calculation");
+                history.push({ expression: currentInput, result });
+                saveHistory();
+                renderHistory();
+                currentInput = result.toString();
+            } catch (error) {
+                currentInput = 'Error';
+            }
+            updateDisplay();
+        };
+
+        const handleButtonClick = (value) => {
+            if (currentInput === 'Error') currentInput = '';
+
+            const sciFuncs = ['sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt('];
+
+            if (value === 'clear') currentInput = '';
+            else if (value === 'backspace') currentInput = currentInput.slice(0, -1);
+            else if (value === '=') { if(currentInput) handleCalculation(); }
+            else if (value === '%') { if(currentInput) currentInput = (parseFloat(currentInput) / 100).toString(); }
+            else if (sciFuncs.includes(value + '(')) currentInput += value + '(';
+            else {
+                const operatorMap = {'*': '×', '/': '÷', '+': '+', '-': '−', '^': '^', '(': '(', ')': ')'};
+                currentInput += operatorMap[value] || value;
+            }
+            updateDisplay();
+        };
+
+        document.querySelectorAll('#standard-mode .btn, #student-mode .btn').forEach(button => {
+            button.addEventListener('click', () => handleButtonClick(button.dataset.value));
+        });
+        
+        // --- FINANCE & BUSINESS LOGIC ---
+        document.getElementById('calculate-loan').addEventListener('click', () => {
+            const P = parseFloat(document.getElementById('loan-amount').value);
+            const r = parseFloat(document.getElementById('interest-rate').value) / 100 / 12;
+            const n = parseFloat(document.getElementById('loan-term').value) * 12;
+            const resultDiv = document.getElementById('loan-result');
+
+            if (P > 0 && r > 0 && n > 0) {
+                const M = P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+                resultDiv.innerHTML = `<p class="text-sm">Monthly Payment</p><p class="text-3xl font-bold text-red-500">$${M.toFixed(2)}</p>`;
+            } else {
+                resultDiv.innerHTML = `<p class="text-red-500">Please fill all fields correctly.</p>`;
+            }
+        });
+        
+        document.getElementById('calculate-margin').addEventListener('click', () => {
+            const cost = parseFloat(document.getElementById('cost-price').value);
+            const sell = parseFloat(document.getElementById('sell-price').value);
+            const resultDiv = document.getElementById('margin-result');
+
+            if (sell > 0 && cost >= 0 && sell > cost) {
+                const margin = ((sell - cost) / sell) * 100;
+                resultDiv.innerHTML = `<p class="text-sm">Profit Margin</p><p class="text-3xl font-bold text-red-500">${margin.toFixed(2)}%</p>`;
+            } else {
+                resultDiv.innerHTML = `<p class="text-red-500">Selling price must be greater than cost.</p>`;
+            }
+        });
+
+        // --- INITIALIZATION ---
+        loadHistory();
+        switchMode('standard'); // Start in standard mode
+    });
+    </script>
+</body>
+</html>
+
