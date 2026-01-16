@@ -1,3 +1,5 @@
+       
+
 <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
@@ -9,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables for theming */
+        /* --- CSS Variables (Unchanged) --- */
         :root {
             --bg-color: #f3f4f6;
             --main-text-color: #1f2937;
@@ -55,7 +57,7 @@
             --mode-selector-bg: rgba(55, 65, 81, 0.5);
         }
 
-        /* General Styles */
+        /* --- General Styles --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -71,7 +73,6 @@
             padding: 1rem;
         }
 
-        /* Calculator Container */
         #calculator-container {
             width: 100%;
             max-width: 340px;
@@ -119,7 +120,6 @@
 
         /* Button Grids */
         .button-grid-standard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-        .button-grid-student { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; }
         
         .btn {
             border: none; cursor: pointer; transition: background-color 0.3s ease;
@@ -128,7 +128,6 @@
         }
         .btn:hover { background-color: var(--btn-default-hover-bg); }
         .btn.std-btn { font-size: 1.25rem; padding: 0.75rem; border-radius: 1rem; }
-        .btn.sci-btn { font-size: 0.85rem; padding: 0.6rem 0.2rem; border-radius: 0.5rem; }
         .btn.col-span-2 { grid-column: span 2 / span 2; }
         
         .btn-operator { background-color: var(--btn-operator-bg); color: var(--btn-operator-text); }
@@ -136,7 +135,7 @@
         .btn-equal { background-color: var(--btn-equal-bg); color: white; }
         .btn-equal:hover { background-color: var(--btn-equal-hover-bg); }
 
-        /* Form-based Modes */
+        /* Form-based Modes (Used for Finance, Business, and now Tax) */
         .form-mode { display: flex; flex-direction: column; gap: 0.75rem; }
         .form-mode h3 { text-align: center; font-weight: 700; font-size: 1rem; }
         .form-group label { font-size: 0.75rem; font-weight: 500; }
@@ -147,8 +146,8 @@
         .calc-input:focus { outline: none; box-shadow: 0 0 0 2px var(--btn-operator-text); }
         .form-mode-btn { font-weight: 700; padding: 0.75rem; border-radius: 0.5rem; width: 100%; margin-top: 0.5rem; }
         .form-result { text-align: center; padding-top: 0.5rem; min-height: 60px; }
-        .form-result .result-label { font-size: 0.875rem; }
-        .form-result .result-value { font-size: 1.75rem; font-weight: 700; color: var(--btn-operator-text); }
+        .form-result .result-label { font-size: 0.875rem; margin-top: 0.5rem; color: var(--secondary-text-color); }
+        .form-result .result-value { font-size: 1.5rem; font-weight: 700; color: var(--btn-operator-text); }
         .form-result .error { color: var(--btn-operator-text); font-size: 0.9rem; }
 
         /* History Panel */
@@ -197,7 +196,7 @@
 
         <div class="mode-selector">
             <button class="mode-btn active" data-mode="standard">Std</button>
-            <button class="mode-btn" data-mode="student">Sci</button>
+            <button class="mode-btn" data-mode="tax">Tax</button>
             <button class="mode-btn" data-mode="finance">Fin</button>
             <button class="mode-btn" data-mode="business">Biz</button>
         </div>
@@ -230,34 +229,22 @@
             </div>
         </div>
         
-        <div id="student-mode" class="calculator-mode">
-            <div class="button-grid-student">
-                <button class="btn sci-btn btn-operator" data-value="sin">sin</button>
-                <button class="btn sci-btn btn-operator" data-value="cos">cos</button>
-                <button class="btn sci-btn btn-operator" data-value="tan">tan</button>
-                <button class="btn sci-btn btn-operator" data-value="(">(</button>
-                <button class="btn sci-btn btn-operator" data-value=")">)</button>
-                <button class="btn sci-btn btn-operator" data-value="log">log</button>
-                <button class="btn sci-btn" data-value="7">7</button>
-                <button class="btn sci-btn" data-value="8">8</button>
-                <button class="btn sci-btn" data-value="9">9</button>
-                <button class="btn sci-btn btn-operator" data-value="clear">AC</button>
-                <button class="btn sci-btn btn-operator" data-value="ln">ln</button>
-                <button class="btn sci-btn" data-value="4">4</button>
-                <button class="btn sci-btn" data-value="5">5</button>
-                <button class="btn sci-btn" data-value="6">6</button>
-                <button class="btn sci-btn btn-operator" data-value="*">×</button>
-                <button class="btn sci-btn btn-operator" data-value="sqrt">√</button>
-                <button class="btn sci-btn" data-value="1">1</button>
-                <button class="btn sci-btn" data-value="2">2</button>
-                <button class="btn sci-btn" data-value="3">3</button>
-                <button class="btn sci-btn btn-operator" data-value="-">−</button>
-                <button class="btn sci-btn btn-operator" data-value="^">^</button>
-                <button class="btn sci-btn" data-value="0">0</button>
-                <button class="btn sci-btn" data-value=".">.</button>
-                <button class="btn sci-btn btn-operator" data-value="+">+</button>
-                <button class="btn sci-btn btn-equal" data-value="=">=</button>
+        <div id="tax-mode" class="calculator-mode form-mode">
+            <h3>Tax Estimator</h3>
+            <div class="form-group">
+                <label for="tax-income">Annual Income ($)</label>
+                <input type="number" id="tax-income" placeholder="e.g., 50000" class="calc-input">
             </div>
+            <div class="form-group">
+                <label for="tax-rate">Tax Rate in your Country (%)</label>
+                <input type="number" id="tax-rate" placeholder="e.g., 20" class="calc-input">
+            </div>
+            <div class="form-group">
+                <label for="tax-deductions">Deductions (Optional)</label>
+                <input type="number" id="tax-deductions" placeholder="e.g., 1000" class="calc-input">
+            </div>
+            <button id="calculate-tax" class="btn btn-equal form-mode-btn">Calculate Net Income</button>
+            <div id="tax-result" class="form-result"></div>
         </div>
 
         <div id="finance-mode" class="calculator-mode form-mode">
@@ -376,8 +363,8 @@
             modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
             calculatorModes.forEach(calc => calc.classList.toggle('active', calc.id === `${mode}-mode`));
             
-            // Hide the main display screen if in Finance or Business mode
-            displayContainer.style.display = (mode === 'standard' || mode === 'student') ? 'block' : 'none';
+            // Show display only for standard mode now
+            displayContainer.style.display = (mode === 'standard') ? 'block' : 'none';
             
             // Optional: reset input when switching
             currentInput = '';
@@ -388,35 +375,22 @@
             display.value = currentInput || '0';
         };
 
-        // --- Math & Calculation Logic ---
+        // --- Standard Calculation Logic ---
         const handleCalculation = () => {
             try {
-                // Prepare string for evaluation
+                // Prepare string for evaluation (Basic math only now)
                 let expression = currentInput
                     .replace(/×/g, '*')
                     .replace(/÷/g, '/')
-                    .replace(/−/g, '-')
-                    .replace(/\^/g, '**')
-                    .replace(/sqrt/g, 'Math.sqrt')
-                    .replace(/log/g, 'Math.log10')
-                    .replace(/ln/g, 'Math.log');
-                
-                // IMPORTANT: Handle Trig functions (Degrees -> Radians conversion)
-                // This replaces "sin(" with "Math.sin(Math.PI/180*" so "sin(90)" becomes "Math.sin(Math.PI/180*90)"
-                expression = expression
-                    .replace(/sin\(/g, 'Math.sin(Math.PI/180*')
-                    .replace(/cos\(/g, 'Math.cos(Math.PI/180*')
-                    .replace(/tan\(/g, 'Math.tan(Math.PI/180*');
+                    .replace(/−/g, '-');
                 
                 // Evaluate
                 const result = new Function('return ' + expression)();
                 
                 if (isNaN(result) || !isFinite(result)) throw new Error("Invalid calculation");
 
-                // Format result to avoid 0.00000000004 issues
                 const formattedResult = parseFloat(result.toFixed(10)); 
                 
-                // Update history
                 history.push({ expression: currentInput, result: formattedResult });
                 saveHistory();
                 renderHistory();
@@ -431,9 +405,6 @@
         const handleButtonClick = (value) => {
             if (currentInput === 'Error') currentInput = '';
             
-            // Define scientific functions that need a parenthesis appended
-            const sciFuncs = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt'];
-
             if (value === 'clear') {
                 currentInput = '';
             } 
@@ -446,13 +417,9 @@
             else if (value === '%') {
                 if(currentInput) currentInput = (parseFloat(currentInput) / 100).toString();
             } 
-            // FIXED: Check if the value is in our list of functions
-            else if (sciFuncs.includes(value)) {
-                currentInput += value + '(';
-            } 
             else {
-                // Map operators to visual symbols if needed, or append standard values
-                const operatorMap = {'*': '×', '/': '÷', '+': '+', '-': '−', '^': '^', '(': '(', ')': ')'};
+                // Map operators to visual symbols
+                const operatorMap = {'*': '×', '/': '÷', '+': '+', '-': '−'};
                 currentInput += operatorMap[value] || value;
             }
             updateDisplay();
@@ -460,13 +427,36 @@
 
         // --- Event Listeners ---
         
-        // Calculator Buttons (Standard & Sci)
+        // Calculator Buttons (Standard)
         document.querySelectorAll('.btn').forEach(button => {
-            // Skip buttons inside form modes (Finance/Biz)
+            // Skip buttons inside form modes (Finance/Biz/Tax)
             if(button.closest('.form-mode')) return;
             button.addEventListener('click', () => handleButtonClick(button.dataset.value));
         });
         
+        // NEW: Tax Calculator Logic
+        document.getElementById('calculate-tax').addEventListener('click', () => {
+            const income = parseFloat(document.getElementById('tax-income').value);
+            const rate = parseFloat(document.getElementById('tax-rate').value);
+            const deductions = parseFloat(document.getElementById('tax-deductions').value) || 0;
+            const resultDiv = document.getElementById('tax-result');
+
+            if (income > 0 && rate >= 0) {
+                const taxableIncome = Math.max(0, income - deductions);
+                const taxAmount = taxableIncome * (rate / 100);
+                const netIncome = income - taxAmount;
+
+                resultDiv.innerHTML = `
+                    <p class="result-label">Tax Payable</p>
+                    <p class="result-value" style="font-size: 1.25rem;">$${taxAmount.toFixed(2)}</p>
+                    <p class="result-label">Net Income (Take Home)</p>
+                    <p class="result-value">$${netIncome.toFixed(2)}</p>
+                `;
+            } else {
+                resultDiv.innerHTML = `<p class="error">Please enter valid income and tax rate.</p>`;
+            }
+        });
+
         // Finance Calculator Logic
         document.getElementById('calculate-loan').addEventListener('click', () => {
             const P = parseFloat(document.getElementById('loan-amount').value);
@@ -510,7 +500,6 @@
         // Initialization
         applyTheme(localStorage.getItem('calculator-theme') || 'light');
         loadHistory();
-        // Force Standard mode on load
         switchMode('standard'); 
     });
     </script>
